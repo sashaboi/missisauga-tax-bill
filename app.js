@@ -1,10 +1,13 @@
 (function () {
   "use strict";
 
-  const { items } = window.TAX_DATA;
-  // Use the sum of the line items as the basis so the invoice reconciles
-  // exactly to the user's tax amount (percentages add to 100%).
-  const basisTotal = items.reduce((a, b) => a + b.budget, 0);
+  const { basisTotal, items } = window.TAX_DATA;
+  // Math follows the source spreadsheet exactly:
+  //   amount(row) = (userTax * B[row]) / B$2
+  // where B$2 is the basisTotal value provided in data.js (1,082,479.7984).
+  // The line items therefore do NOT sum to the user's input — that matches
+  // the spreadsheet's behavior (sum(B3:B34) > B2), so the "Total" row below
+  // is the actual sum of the allocations, not the input box.
 
   const fmtMoney = (n) =>
     n.toLocaleString("en-CA", {
@@ -57,23 +60,28 @@
     rowsEl.appendChild(row);
   });
 
-  function recalc(total) {
+  function recalc(userTax) {
+    // Per the source spreadsheet: amount(row) = (userTax * B[row]) / B$2
     const totals = { Peel: 0, Mississauga: 0, Other: 0 };
+    let allocated = 0;
     document.querySelectorAll(".row").forEach((row) => {
-      const share = Number(row.dataset.share);
-      const amt = total * share;
+      const share = Number(row.dataset.share); // B[row] / B$2
+      const amt = userTax * share;
       totals[row.dataset.section] += amt;
+      allocated += amt;
       row.querySelector("[data-amt]").textContent = fmtMoney(amt);
     });
 
     for (const section of Object.keys(summaryEls)) {
       const sub = totals[section];
       document.getElementById(summaryEls[section].sub).textContent = fmtMoney(sub);
-      document.getElementById(summaryEls[section].pct).textContent =
-        total > 0 ? fmtPct(sub / total) + " of bill" : "—";
+      const pctEl = document.getElementById(summaryEls[section].pct);
+      if (pctEl) pctEl.textContent = "";
     }
 
-    document.getElementById("grandTotal").textContent = fmtMoney(total);
+    // Grand total = sum of the line items as the spreadsheet computes them
+    // (this will be > userTax because sum(B3:B34) > B$2 in the source).
+    document.getElementById("grandTotal").textContent = fmtMoney(allocated);
   }
 
   function setMeta() {
