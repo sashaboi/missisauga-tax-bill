@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your Property Tax Invoice — Where Your Dollars Go</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="page" id="invoice">
+    <header class="letterhead">
+      <div class="crest" aria-hidden="true">
+        <svg viewBox="0 0 64 64" width="56" height="56">
+          <circle cx="32" cy="32" r="30" fill="none" stroke="#1f2a44" stroke-width="2"/>
+          <path d="M16 44 L32 16 L48 44 Z" fill="none" stroke="#b8860b" stroke-width="2"/>
+          <circle cx="32" cy="36" r="4" fill="#b8860b"/>
+        </svg>
+      </div>
+      <div class="masthead">
+        <div class="city">City of Mississauga &middot; Region of Peel</div>
+        <h1 class="title">Your Property Tax Invoice</h1>
+        <div class="subtitle">An itemized breakdown of where your tax dollars go</div>
+      </div>
+      <div class="meta">
+        <div><span class="meta-label">Issue&nbsp;Date</span><span class="meta-value" id="issueDate">—</span></div>
+        <div><span class="meta-label">Tax&nbsp;Year</span><span class="meta-value" id="taxYear">—</span></div>
+        <div class="meta-for show-sm">
+          <span class="meta-label">For</span>
+          <span class="meta-value">Annual Property Tax</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="billto">
+      <div class="billto-block">
+        <div class="block-label">For</div>
+        <div class="block-value">Annual Property Tax</div>
+        <div class="block-sub">Tax-supported municipal services</div>
+      </div>
+      <div class="billto-block input-block">
+        <label class="block-label" for="taxAmount">Total Property Tax Paid</label>
+        <div class="amount-input">
+          <span class="currency">$</span>
+          <input
+            id="taxAmount"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="1"
+            value="6600"
+            autofocus
+            aria-label="Total property tax paid"
+          />
+        </div>
+        <div class="block-sub">Edit the amount to see your breakdown</div>
+      </div>
+    </section>
+
+    <section class="summary" aria-label="Summary by authority">
+      <div class="summary-card" data-section="Peel">
+        <div class="summary-label">Region of Peel</div>
+        <div class="summary-amt" id="sub-peel">—</div>
+        <div class="summary-pct" id="pct-peel">—</div>
+      </div>
+      <div class="summary-card" data-section="Mississauga">
+        <div class="summary-label">City of Mississauga</div>
+        <div class="summary-amt" id="sub-mississauga">—</div>
+        <div class="summary-pct" id="pct-mississauga">—</div>
+      </div>
+      <div class="summary-card" data-section="Other">
+        <div class="summary-label">Other Levies</div>
+        <div class="summary-amt" id="sub-other">—</div>
+        <div class="summary-pct" id="pct-other">—</div>
+      </div>
+    </section>
+
+    <section class="invoice-table" aria-label="Itemized tax breakdown">
+      <div class="table-head">
+        <div class="col col-num">#</div>
+        <div class="col col-desc"><span class="hide-sm">Service / </span>Description</div>
+        <div class="col col-auth">Authority</div>
+        <div class="col col-amt">Amount</div>
+      </div>
+
+      <div class="rows" id="rows"></div>
+
+      <div class="grand-total">
+        <div class="col col-num"></div>
+        <div class="col col-desc">Total Property Tax</div>
+        <div class="col col-auth"></div>
+        <div class="col col-amt" id="grandTotal">$0.00</div>
+      </div>
+    </section>
+
+    <section class="footnote">
+      <div class="stamp" aria-hidden="true">PAID&nbsp;·&nbsp;THANK&nbsp;YOU</div>
+      <div class="notes">
+        <p><strong>About this invoice.</strong> Allocations are based on the published
+        operating budget proportions for tax-supported services in Mississauga and the
+        Region of Peel. Your actual bill from the City may differ slightly due to special
+        levies, area-rated charges, and assessment adjustments.</p>
+        <p class="fineprint">This is a citizen-facing visualization, not an official bill.
+        Source: budget figures provided by the user (in $ thousands). Total budget basis:
+        <span id="basisTotal">—</span>.</p>
+      </div>
+      <div class="actions no-print">
+        <button id="printBtn" class="btn">Print / Save as PDF</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

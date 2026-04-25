@@ -1,0 +1,460 @@
+/* Invoice / tax-bill aesthetic */
+:root {
+  --paper: #fbf7ee;
+  --paper-edge: #efe7d2;
+  --ink: #1f2a44;
+  --ink-soft: #4a5573;
+  --rule: #d9c9a3;
+  --rule-strong: #8a7a4f;
+  --gold: #b8860b;
+  --gold-soft: #d8b462;
+  --accent: #6e0d25;     /* deep municipal red */
+  --bar: #2c4267;
+  --bar-soft: #c9d2e3;
+  --paid: #2d7a3a;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background:
+    radial-gradient(circle at 20% 0%, #efe6cf 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, #ece2c4 0%, transparent 55%),
+    #e8dec0;
+  color: var(--ink);
+  font-family: "Iowan Old Style", "Charter", "Georgia", "Cambria", serif;
+  font-size: 14px;
+  line-height: 1.45;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Page / paper */
+.page {
+  max-width: 920px;
+  margin: 32px auto;
+  background: var(--paper);
+  border: 1px solid var(--paper-edge);
+  box-shadow:
+    0 1px 0 #fff inset,
+    0 0 0 1px var(--rule) inset,
+    0 30px 60px -20px rgba(40, 30, 0, 0.25),
+    0 8px 18px -10px rgba(40, 30, 0, 0.2);
+  padding: 40px 48px 32px;
+  position: relative;
+  background-image:
+    linear-gradient(transparent 95%, rgba(184, 134, 11, 0.08) 95%),
+    linear-gradient(90deg, transparent 95%, rgba(184, 134, 11, 0.06) 95%);
+  background-size: 24px 24px, 24px 24px;
+}
+.page::before,
+.page::after {
+  content: "";
+  position: absolute; left: 16px; right: 16px; height: 4px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.page::before { top: 14px; }
+.page::after  { bottom: 14px; }
+
+/* Letterhead */
+.letterhead {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  border-bottom: 2px double var(--rule-strong);
+}
+.crest svg { display: block; }
+.masthead .city {
+  font-variant: small-caps;
+  letter-spacing: 0.15em;
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+.masthead .title {
+  font-family: "Didot", "Bodoni 72", "Playfair Display", "Iowan Old Style", serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin: 0 0 4px 0;
+  color: var(--ink);
+}
+.masthead .subtitle {
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+.meta {
+  text-align: right;
+  font-size: 12px;
+  color: var(--ink-soft);
+  display: grid;
+  gap: 4px;
+  min-width: 180px;
+}
+.meta > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px dotted var(--rule);
+  padding-bottom: 2px;
+}
+.meta-label {
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+}
+.meta-value {
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  color: var(--ink);
+}
+
+/* Bill-to / input row */
+.billto {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 24px;
+  padding: 18px 0 22px;
+  border-bottom: 1px solid var(--rule);
+}
+.billto-block .block-label {
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+.billto-block .block-value {
+  font-size: 16px;
+  color: var(--ink);
+}
+.billto-block .block-sub {
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.input-block {
+  border-left: 1px dashed var(--rule-strong);
+  padding-left: 20px;
+}
+.amount-input {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  background: #fffdf6;
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  padding: 8px 12px;
+  box-shadow: inset 0 0 0 1px #fff, inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  margin: 4px 0 6px;
+}
+.amount-input .currency {
+  font-family: "Didot", "Bodoni 72", serif;
+  font-size: 22px;
+  color: var(--accent);
+  font-weight: 700;
+}
+.amount-input input {
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 22px;
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 180px;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.amount-input input:focus { color: var(--accent); }
+.amount-input input::-webkit-outer-spin-button,
+.amount-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.amount-input input[type=number] { -moz-appearance: textfield; }
+
+/* Table */
+.invoice-table {
+  margin-top: 18px;
+}
+.col {
+  padding: 6px 8px;
+}
+.col-num  { width: 36px; text-align: right; font-family: "SF Mono","Menlo",monospace; color: var(--ink-soft); }
+.col-desc { flex: 1 1 auto; }
+.col-auth { width: 170px; text-align: left; }
+.col-pct  { width: 92px;  text-align: right; font-family: "SF Mono","Menlo",monospace; color: var(--ink-soft); }
+.col-amt  { width: 120px; text-align: right; font-family: "SF Mono","Menlo",monospace; }
+
+.table-head {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(#f3ead0, #ece1bd);
+  border-top: 1px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule-strong);
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.show-sm { display: none; }
+
+.row, .grand-total {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px dotted var(--rule);
+}
+.row:nth-child(even) { background: rgba(255, 253, 246, 0.55); }
+.row .desc-name { color: var(--ink); }
+.row .desc-bar {
+  margin-top: 4px;
+  height: 4px;
+  background: var(--bar-soft);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.row .desc-bar > span {
+  display: block;
+  height: 100%;
+  max-width: 100%;
+}
+.bar-Peel        { background: linear-gradient(90deg, #6e0d25, #a8324a); }
+.bar-Mississauga { background: linear-gradient(90deg, #2c4267, #4663a0); }
+.bar-Other       { background: linear-gradient(90deg, #6b5a1d, #b8860b); }
+
+/* Authority column — plain colored text (no pill) */
+.col-auth {
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.auth-Peel        { color: #6e0d25; }
+.auth-Mississauga { color: #2c4267; }
+.auth-Other       { color: #6b5a1d; }
+
+/* Summary cards above the line items — compact one row */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 12px 0 10px;
+}
+.summary-card {
+  background: #fffdf6;
+  border: 1px solid var(--rule);
+  border-top: 3px solid currentColor;
+  padding: 8px 12px;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px #fff;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.summary-card[data-section="Peel"]        { color: #6e0d25; }
+.summary-card[data-section="Mississauga"] { color: #2c4267; }
+.summary-card[data-section="Other"]       { color: #6b5a1d; }
+.summary-label {
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  flex: 1 1 100%;
+}
+.summary-amt {
+  font-family: "Didot", "Bodoni 72", "Iowan Old Style", serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.summary-pct {
+  font-family: "SF Mono", "Menlo", monospace;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.grand-total {
+  margin-top: 18px;
+  background: linear-gradient(#1f2a44, #28365a);
+  color: #fbf7ee;
+  border: none;
+  border-top: 4px double var(--gold);
+  border-bottom: 4px double var(--gold);
+  font-size: 16px;
+}
+.grand-total .col-desc {
+  font-variant: small-caps;
+  letter-spacing: 0.18em;
+  color: var(--gold-soft);
+}
+.grand-total .col-pct,
+.grand-total .col-amt { color: #fbf7ee; }
+.grand-total .col-amt { font-weight: 700; font-size: 18px; }
+
+/* Footnote / paid stamp */
+.footnote {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 22px;
+  align-items: center;
+}
+.stamp {
+  border: 3px double var(--paid);
+  color: var(--paid);
+  padding: 10px 16px;
+  font-family: "Didot", "Bodoni 72", serif;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  font-size: 18px;
+  transform: rotate(-6deg);
+  opacity: 0.85;
+  border-radius: 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+.notes p { margin: 0 0 6px; color: var(--ink-soft); font-size: 12px; }
+.notes .fineprint { font-size: 11px; opacity: 0.85; }
+
+.actions {
+  grid-column: 1 / -1;
+  text-align: right;
+  margin-top: 8px;
+}
+.btn {
+  font: inherit;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
+  padding: 8px 16px;
+  border-radius: 2px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+}
+.btn:hover { background: var(--accent); border-color: var(--accent); }
+
+@media (max-width: 820px) {
+  .col-auth { width: 130px; }
+}
+
+@media (max-width: 720px) {
+  body { font-size: 13px; }
+  .page { margin: 0; padding: 16px 12px 16px; box-shadow: none; border: none; }
+  .page::before, .page::after { display: none; }
+
+  .letterhead {
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    padding-bottom: 10px;
+  }
+  .crest svg { width: 40px; height: 40px; }
+  .masthead .city { font-size: 10.5px; }
+  .masthead .title { font-size: 22px; }
+  .masthead .subtitle { font-size: 12px; }
+  .meta {
+    grid-column: 1 / -1;
+    text-align: left;
+    min-width: 0;
+    font-size: 11px;
+  }
+  .meta > div { justify-content: flex-start; }
+  .meta .meta-for.show-sm {
+    display: flex;
+    gap: 12px;
+    border-bottom: 1px dotted var(--rule);
+    padding-bottom: 2px;
+  }
+
+  /* On mobile the "For" info has moved up into the meta column */
+  .billto {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px 0 14px;
+  }
+  .billto > .billto-block:not(.input-block) { display: none; }
+  .input-block {
+    border-top: none;
+    padding-top: 0;
+  }
+  .input-block {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px dashed var(--rule-strong);
+    padding-top: 12px;
+  }
+  .amount-input { padding: 6px 10px; }
+  .amount-input .currency { font-size: 18px; }
+  .amount-input input { font-size: 18px; width: 140px; }
+
+  /* Quick row of three small chips */
+  .summary {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin: 10px 0;
+  }
+  .summary-card {
+    padding: 6px 8px;
+    border-top-width: 2px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .summary-label {
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    flex: none;
+    line-height: 1.1;
+  }
+  .summary-amt { font-size: 14px; line-height: 1.1; }
+  .summary-pct { font-size: 10px; }
+
+  /* Table — compact, two-row layout per item */
+  .invoice-table { margin-top: 6px; }
+  .hide-sm { display: none; }
+  .show-sm { display: inline; }
+
+  .table-head {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    padding: 2px 0;
+  }
+  .table-head .col-auth { display: none; }
+
+  .col { padding: 4px 6px; }
+  .row { flex-wrap: wrap; padding: 2px 0; }
+  .col-num   { width: 22px; padding-left: 2px; padding-right: 2px; }
+  .col-desc  { flex: 1 1 0; min-width: 0; }
+  .col-auth  {
+    order: 5;
+    width: 100%;
+    padding: 0 6px 6px 28px;
+    font-size: 10.5px;
+  }
+  .col-pct   { width: 48px; font-size: 11px; padding-left: 2px; padding-right: 4px; }
+  .col-amt   { width: 84px; font-size: 12.5px; padding-left: 4px; padding-right: 6px; }
+  .row .desc-name { font-size: 13px; line-height: 1.25; }
+  .row .desc-bar { margin-top: 2px; height: 3px; }
+
+  .grand-total { font-size: 14px; flex-wrap: nowrap; }
+  .grand-total .col-auth { display: none; }
+  .grand-total .col-amt { font-size: 15px; }
+
+  .footnote {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .stamp { justify-self: center; transform: rotate(-4deg) scale(0.85); }
+}
+
+/* Print */
+@media print {
+  body { background: #fff; }
+  .page { margin: 0; box-shadow: none; border: none; }
+  .no-print { display: none !important; }
+  .stamp { opacity: 1; }
+}
