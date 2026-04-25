@@ -23,13 +23,12 @@
   const AUTHORITY_LABEL = {
     Peel: "Region of Peel",
     Mississauga: "City of Mississauga",
-    Other: "Other",
+    Other: "",
   };
 
   const summaryEls = {
     Peel:        { sub: "sub-peel",        pct: "pct-peel" },
     Mississauga: { sub: "sub-mississauga", pct: "pct-mississauga" },
-    Other:       { sub: "sub-other",       pct: "pct-other" },
   };
 
   // One combined, sorted list. Items already arrive sorted by budget desc.

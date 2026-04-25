@@ -239,7 +239,7 @@ html, body {
 /* Summary cards above the line items — compact one row */
 .summary {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   margin: 12px 0 10px;
 }
@@ -390,9 +390,9 @@ html, body {
   .amount-input .currency { font-size: 18px; }
   .amount-input input { font-size: 18px; width: 140px; }
 
-  /* Quick row of three small chips */
+  /* Quick row of summary chips */
   .summary {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 6px;
     margin: 10px 0;
   }
