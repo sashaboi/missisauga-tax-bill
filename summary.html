@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Your Property Tax Invoice — Where Your Dollars Go</title>
+  <title>Your Property Tax Invoice — Summary</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body data-view="detailed">
+<body data-view="summary">
   <main class="page" id="invoice">
     <header class="letterhead">
       <div class="crest" aria-hidden="true">
@@ -18,10 +18,10 @@
       </div>
       <div class="masthead">
         <h1 class="title">Your Property Tax Invoice</h1>
-        <div class="subtitle">An itemized breakdown of where your tax dollars go</div>
+        <div class="subtitle">A summary view — Mississauga + Peel services consolidated</div>
         <nav class="view-nav no-print" aria-label="View">
-          <a href="./" class="view-link is-active" aria-current="page">Detailed</a>
-          <a href="./summary.html" class="view-link">Summary</a>
+          <a href="./" class="view-link">Detailed</a>
+          <a href="./summary.html" class="view-link is-active" aria-current="page">Summary</a>
           <a href="./invoice.html" class="view-link">Invoice</a>
         </nav>
       </div>
@@ -69,6 +69,10 @@
         <div class="summary-label">City of Mississauga</div>
         <div class="summary-amt" id="sub-mississauga">—</div>
       </div>
+      <div class="summary-card" data-section="Combined">
+        <div class="summary-label">Combined Services</div>
+        <div class="summary-amt" id="sub-combined">—</div>
+      </div>
     </section>
 
     <section class="invoice-table" aria-label="Itemized tax breakdown">
@@ -89,16 +93,20 @@
       </div>
     </section>
 
+    <section class="notes-block" id="notesBlock" aria-label="Notes">
+      <div class="notes-title">Notes</div>
+      <ol class="notes-list" id="notesList"></ol>
+    </section>
+
     <section class="footnote">
       <div class="stamp" aria-hidden="true">PAID&nbsp;·&nbsp;THANK&nbsp;YOU</div>
       <div class="notes">
-        <p><strong>About this invoice.</strong> Allocations are based on the published
-        operating budget proportions for tax-supported services in Mississauga and the
-        Region of Peel. Your actual bill from the City may differ slightly due to special
-        levies, area-rated charges, and assessment adjustments.</p>
+        <p><strong>About this view.</strong> The summary view consolidates pairs of
+        Mississauga + Peel services into single line items (e.g. roads, IT, recreation,
+        building maintenance, planning). For the full per-service breakdown, switch to
+        <a href="./">Detailed</a>.</p>
         <p class="fineprint">This is a citizen-facing visualization, not an official bill.
-        Source: budget figures provided by the user (in $ thousands). Total budget basis:
-        <span id="basisTotal">—</span>.</p>
+        Total budget basis: <span id="basisTotal">—</span>.</p>
       </div>
       <div class="actions no-print">
         <button id="printBtn" class="btn">Print / Save as PDF</button>

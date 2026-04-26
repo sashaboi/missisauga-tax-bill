@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your Property Tax Invoice</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-view="invoice">
+  <main class="page invoice-page">
+    <header class="inv-header">
+      <button
+        type="button"
+        class="inv-menu-btn no-print"
+        id="invMenuBtn"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="invMenu"
+      >
+        <span></span><span></span><span></span>
+      </button>
+      <h1 class="inv-title">INVOICE</h1>
+      <nav id="invMenu" class="inv-menu no-print" aria-label="View" hidden>
+        <a href="./" class="view-link">Detailed</a>
+        <a href="./summary.html" class="view-link">Summary</a>
+        <a href="./invoice.html" class="view-link is-active" aria-current="page">Invoice</a>
+      </nav>
+    </header>
+
+    <section class="inv-parties">
+      <div class="inv-party">
+        <div class="inv-party-header">TOTAL PROPERTY TAX PAID</div>
+        <div class="inv-party-body inv-party-body--input">
+          <div class="amount-input">
+            <span class="currency">$</span>
+            <input
+              id="taxAmount"
+              type="number"
+              inputmode="decimal"
+              min="0"
+              step="1"
+              value="8000"
+              autofocus
+              aria-label="Total property tax paid"
+            />
+          </div>
+          <div class="inv-input-hint">Fill in your tax amount</div>
+        </div>
+      </div>
+      <div class="inv-party">
+        <div class="inv-party-header">BILL TO</div>
+        <div class="inv-party-body">
+          <div class="inv-party-name">PROPERTY OWNER</div>
+          <div>MISSISSAUGA, ON</div>
+          <div>TAX YEAR: <span id="taxYear">—</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="inv-table-wrap" aria-label="Itemized tax breakdown">
+      <div class="inv-table">
+        <div class="inv-thead">
+          <div class="inv-th inv-th-desc">DESCRIPTION</div>
+          <div class="inv-th inv-th-amt">AMOUNT</div>
+        </div>
+        <div class="rows" id="rows"></div>
+      </div>
+
+      <div class="inv-total">
+        <div class="inv-total-label">TOTAL</div>
+        <div class="inv-total-amt" id="grandTotal">$0.00</div>
+      </div>
+    </section>
+
+    <section class="inv-footer">
+      <p class="inv-fineprint" role="note">
+        <strong>Not an official bill.</strong>
+        Illustrative breakdown of where your property tax goes — figures are
+        proportional estimates from the published Mississauga &amp; Peel budgets,
+        not amounts owed to or issued by either government. Total budget basis:
+        <span id="basisTotal">—</span>.
+      </p>
+      <div class="actions no-print">
+        <button id="printBtn" class="btn">Print / Save as PDF</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      var btn = document.getElementById("invMenuBtn");
+      var menu = document.getElementById("invMenu");
+      if (!btn || !menu) return;
+      function close() {
+        menu.hidden = true;
+        btn.setAttribute("aria-expanded", "false");
+      }
+      function open() {
+        menu.hidden = false;
+        btn.setAttribute("aria-expanded", "true");
+      }
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if (menu.hidden) open(); else close();
+      });
+      document.addEventListener("click", function (e) {
+        if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) close();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") close();
+      });
+    })();
+  </script>
+</body>
+</html>
