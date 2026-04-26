@@ -39,7 +39,44 @@
   };
 
   // One combined, sorted list (largest first).
-  const sorted = items.slice().sort((a, b) => b.budget - a.budget);
+  let sorted = items.slice().sort((a, b) => b.budget - a.budget);
+
+  // Invoice view: Mississauga + Peel pairs stay as two rows but appear consecutively
+  // (City first, Region second) when the first of the pair is reached in budget order.
+  if (view === "invoice") {
+    const PAIRS = [
+      ["Mississauga Roads & Winter Maintenance", "Peel Roads & Winter Maintenance"],
+      ["Mississauga Information Technology", "Peel Information Technology"],
+      ["Mississauga Facilities & Property Management", "Peel Facilities & Property Management"],
+      ["Mississauga Planning & Building", "Peel Planning & Building (Development Services)"],
+    ];
+    const byName = new Map(sorted.map((x) => [x.name, x]));
+    const pairKey = new Map();
+    PAIRS.forEach((names, pi) => {
+      names.forEach((n) => pairKey.set(n, pi));
+    });
+    const emittedPair = new Set();
+    const out = [];
+    for (const item of sorted) {
+      const pi = pairKey.get(item.name);
+      if (pi !== undefined) {
+        if (emittedPair.has(pi)) continue;
+        const names = PAIRS[pi];
+        const a = byName.get(names[0]);
+        const b = byName.get(names[1]);
+        if (!a || !b) {
+          out.push(item);
+          continue;
+        }
+        emittedPair.add(pi);
+        out.push(a, b);
+        continue;
+      }
+      out.push(item);
+    }
+    sorted = out;
+  }
+
   const maxShare = sorted[0].budget / basisTotal;
 
   const rowsEl = document.getElementById("rows");
