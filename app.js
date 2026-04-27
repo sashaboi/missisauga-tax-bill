@@ -179,16 +179,53 @@
   }
 
   const input = document.getElementById("taxAmount");
+
+  function parseTaxInput(str) {
+    const digits = String(str ?? "").replace(/\D/g, "");
+    if (!digits) return 0;
+    const n = Number(digits);
+    if (!Number.isFinite(n)) return 0;
+    return Math.max(0, Math.min(n, 1e15));
+  }
+
+  function formatTaxDisplay(n) {
+    const v = Math.max(0, Math.floor(Number(n)) || 0);
+    return v.toLocaleString("en-CA", { maximumFractionDigits: 0 });
+  }
+
+  function taxValueFromInput() {
+    return parseTaxInput(input.value);
+  }
+
+  function syncTaxDisplayFormatted() {
+    input.value = formatTaxDisplay(taxValueFromInput());
+  }
+
   input.addEventListener("input", () => {
-    const v = Math.max(0, Number(input.value) || 0);
-    recalc(v);
+    recalc(taxValueFromInput());
+  });
+
+  input.addEventListener("blur", () => {
+    syncTaxDisplayFormatted();
+    recalc(taxValueFromInput());
   });
 
   const printBtn = document.getElementById("printBtn");
-  if (printBtn) printBtn.addEventListener("click", () => window.print());
+  if (printBtn) {
+    printBtn.addEventListener("click", () => {
+      syncTaxDisplayFormatted();
+      recalc(taxValueFromInput());
+      window.print();
+    });
+  }
 
   setMeta();
-  recalc(Number(input.value) || 0);
+  const startTax =
+    parseTaxInput(input.value) ||
+    (typeof window.TAX_DATA !== "undefined" && window.TAX_DATA.defaultTax) ||
+    0;
+  input.value = formatTaxDisplay(startTax);
+  recalc(startTax);
 
   // Info-icon popover: click toggles a small bubble; outside-click / Escape closes.
   function closePopover() {
