@@ -549,9 +549,15 @@ html, body {
   color: #fff;
   border-color: #1f2a44;
 }
+/* Row that has an open tooltip stacks above later rows so the bubble is not covered. */
+.row:has(.info-popover) {
+  position: relative;
+  z-index: 25;
+}
+
 .info-popover {
   position: absolute;
-  z-index: 30;
+  z-index: 1;
   margin-top: 6px;
   margin-left: -4px;
   width: max-content;
@@ -612,6 +618,7 @@ body[data-view="invoice"] .page.invoice-page {
   margin: 36px auto;
   position: relative;
   border-radius: 2px;
+  overflow: visible; /* tooltips may extend past the card edge */
 }
 
 /* Kill all the warm-paper decorations from the default skin. */
@@ -701,19 +708,20 @@ body[data-view="invoice"] .inv-menu .view-link.is-active {
   color: #fff;
 }
 
-/* Big bold INVOICE title, centered. */
+/* Main title, centered. */
 body[data-view="invoice"] .inv-title {
   text-align: center;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 900;
-  font-size: 48px;
-  letter-spacing: 0.04em;
+  font-size: clamp(22px, 5.5vw, 42px);
+  letter-spacing: 0.03em;
   margin: 0;
-  line-height: 1;
+  padding: 0 44px;
+  line-height: 1.12;
   color: var(--inv-ink);
 }
 
-/* TOTAL PAID / BILL TO blocks. */
+/* TOTAL PAID / PAID BY blocks. */
 body[data-view="invoice"] .inv-parties {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -797,7 +805,19 @@ body[data-view="invoice"] .inv-table {
   border: 1.5px solid var(--inv-line);
   border-radius: 0;
   background: #fff;
-  overflow: hidden;
+  overflow: visible; /* allow tooltips to extend past the border box */
+}
+body[data-view="invoice"] .inv-table-wrap {
+  overflow: visible;
+}
+body[data-view="invoice"] #rows {
+  overflow: visible;
+}
+body[data-view="invoice"] .row {
+  overflow: visible;
+}
+body[data-view="invoice"] .col-desc {
+  overflow: visible;
 }
 body[data-view="invoice"] .inv-thead {
   display: grid;
@@ -916,13 +936,23 @@ body[data-view="invoice"] .btn {
 }
 body[data-view="invoice"] .btn:hover { background: #000; }
 
+body[data-view="invoice"] .inv-credit {
+  margin: 28px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--inv-line-soft);
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--inv-ink-soft);
+}
+
 /* Mobile tuning. */
 @media (max-width: 720px) {
   body[data-view="invoice"] .page.invoice-page {
     padding: 28px 18px 32px;
     margin: 12px;
   }
-  body[data-view="invoice"] .inv-title { font-size: 38px; }
+  body[data-view="invoice"] .inv-title { padding: 0 40px; }
   body[data-view="invoice"] .inv-menu-btn { width: 36px; height: 36px; }
   body[data-view="invoice"] .inv-parties {
     grid-template-columns: 1fr 1fr;

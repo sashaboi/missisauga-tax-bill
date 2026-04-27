@@ -1,25 +1,21 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Your Property Tax Invoice</title>
+  <title>Your Property Tax: Explained </title>
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body data-view="invoice">
   <main class="page invoice-page">
     <header class="inv-header">
-      <button
-        type="button"
-        class="inv-menu-btn no-print"
-        id="invMenuBtn"
-        aria-label="Open menu"
-        aria-expanded="false"
-        aria-controls="invMenu"
-      >
+      <button type="button" class="inv-menu-btn no-print" id="invMenuBtn" aria-label="Open menu" aria-expanded="false"
+        aria-controls="invMenu">
         <span></span><span></span><span></span>
       </button>
-      <h1 class="inv-title">INVOICE</h1>
+      <h1 class="inv-title">Your Property Tax: Explained</h1>
       <nav id="invMenu" class="inv-menu no-print" aria-label="View" hidden>
         <a href="./" class="view-link">Detailed</a>
         <a href="./summary.html" class="view-link">Summary</a>
@@ -33,22 +29,14 @@
         <div class="inv-party-body inv-party-body--input">
           <div class="amount-input">
             <span class="currency">$</span>
-            <input
-              id="taxAmount"
-              type="number"
-              inputmode="decimal"
-              min="0"
-              step="1"
-              value="8000"
-              autofocus
-              aria-label="Total property tax paid"
-            />
+            <input id="taxAmount" type="number" inputmode="decimal" min="0" step="1" value="8000" autofocus
+              aria-label="Total property tax paid" />
           </div>
           <div class="inv-input-hint">Fill in your tax amount</div>
         </div>
       </div>
       <div class="inv-party">
-        <div class="inv-party-header">BILL TO</div>
+        <div class="inv-party-header">PAID BY</div>
         <div class="inv-party-body">
           <div class="inv-party-name">PROPERTY OWNER</div>
           <div>MISSISSAUGA, ON</div>
@@ -84,6 +72,8 @@
         <button id="printBtn" class="btn">Print / Save as PDF</button>
       </div>
     </section>
+
+    <p class="inv-credit">Created by Councillor Dipika Damerla</p>
   </main>
 
   <script src="data.js"></script>
@@ -114,4 +104,5 @@
     })();
   </script>
 </body>
+
 </html>
