@@ -625,14 +625,23 @@ body[data-view="invoice"] .page.invoice-page {
 body[data-view="invoice"] .page.invoice-page::before,
 body[data-view="invoice"] .page.invoice-page::after { content: none; display: none; }
 
-/* Header row: hamburger on the left, centered INVOICE title. */
+/* Header row: hamburger on the left, centered title + subtitle. */
 body[data-view="invoice"] .inv-header {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 0 12px;
+  margin: 0 0 16px;
   min-height: 48px;
+}
+
+body[data-view="invoice"] .inv-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 44px;
 }
 
 /* Hamburger button. */
@@ -708,7 +717,7 @@ body[data-view="invoice"] .inv-menu .view-link.is-active {
   color: #fff;
 }
 
-/* Main title, centered. */
+/* Main title + subheader, centered. */
 body[data-view="invoice"] .inv-title {
   text-align: center;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -716,9 +725,20 @@ body[data-view="invoice"] .inv-title {
   font-size: clamp(22px, 5.5vw, 42px);
   letter-spacing: 0.03em;
   margin: 0;
-  padding: 0 44px;
+  padding: 0;
   line-height: 1.12;
   color: var(--inv-ink);
+}
+
+body[data-view="invoice"] .inv-subtitle {
+  margin: 8px 0 0;
+  padding: 0;
+  text-align: center;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--inv-ink-soft);
 }
 
 /* TOTAL PAID / PAID BY blocks. */
@@ -936,23 +956,14 @@ body[data-view="invoice"] .btn {
 }
 body[data-view="invoice"] .btn:hover { background: #000; }
 
-body[data-view="invoice"] .inv-credit {
-  margin: 28px 0 0;
-  padding-top: 18px;
-  border-top: 1px solid var(--inv-line-soft);
-  text-align: center;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  color: var(--inv-ink-soft);
-}
-
 /* Mobile tuning. */
 @media (max-width: 720px) {
   body[data-view="invoice"] .page.invoice-page {
     padding: 28px 18px 32px;
     margin: 12px;
   }
-  body[data-view="invoice"] .inv-title { padding: 0 40px; }
+  body[data-view="invoice"] .inv-heading { padding: 0 40px; }
+  body[data-view="invoice"] .inv-subtitle { font-size: 11px; letter-spacing: 0.05em; }
   body[data-view="invoice"] .inv-menu-btn { width: 36px; height: 36px; }
   body[data-view="invoice"] .inv-parties {
     grid-template-columns: 1fr 1fr;
