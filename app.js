@@ -88,9 +88,6 @@
       ? Math.max(2, (educationShare / Math.max(municipalShare * maxShare, educationShare)) * 100)
       : Math.max(2, (share / maxShare) * 100);
 
-    const noteMark = item.note
-      ? `<sup class="note-ref">[${item.note}]</sup>`
-      : "";
     const infoIcon = item.info
       ? `<button type="button" class="info-icon" aria-label="More info"
            data-info="${item.info.replace(/"/g, "&quot;")}">i</button>`
@@ -108,7 +105,7 @@
     row.innerHTML = `
       <div class="col col-num">${displayIndex}</div>
       <div class="col col-desc">
-        <div class="desc-name">${item.name}${noteMark}${infoIcon}</div>
+        <div class="desc-name">${item.name}${infoIcon}</div>
         <div class="desc-bar"><span class="bar-${item.section}" style="width:${barW.toFixed(2)}%"></span></div>
       </div>
       <div class="col col-auth auth-${item.section}">${AUTHORITY_LABEL[item.section] || ""}</div>
@@ -257,51 +254,34 @@
   input.value = formatTaxDisplay(startTax);
   recalc(startTax);
 
-  // Info-icon popover: click toggles a small bubble; outside-click / Escape closes.
-  function closePopover() {
-    document.querySelectorAll(".info-popover").forEach((p) => p.remove());
-    document
-      .querySelectorAll('.info-icon[aria-expanded="true"]')
-      .forEach((b) => b.setAttribute("aria-expanded", "false"));
-  }
-  function openPopover(btn) {
-    closePopover();
-    const text = btn.getAttribute("data-info") || "";
-    const pop = document.createElement("span");
-    pop.className = "info-popover";
-    pop.setAttribute("role", "tooltip");
-    pop.textContent = text;
-    btn.insertAdjacentElement("afterend", pop);
-    btn.setAttribute("aria-expanded", "true");
-    // After layout, shift the popover left so it stays inside the viewport,
-    // and keep the arrow visually anchored over the icon.
-    requestAnimationFrame(() => {
-      const margin = 12;
-      const popRect = pop.getBoundingClientRect();
-      const overflowRight = popRect.right - (window.innerWidth - margin);
-      if (overflowRight > 0) {
-        const allowedShift = Math.max(0, popRect.left - margin);
-        const shift = Math.min(overflowRight, allowedShift);
-        if (shift > 0) {
-          pop.style.transform = `translateX(-${shift}px)`;
-          pop.style.setProperty("--arrow-left", `${10 + shift}px`);
-        }
-      }
+  // Tooltips powered by Tippy.js (loaded via CDN). Tippy uses Popper.js, which
+  // is the same positioning engine Bootstrap's tooltips are built on, so flips
+  // and shifts when near the viewport edge happen automatically. Tippy is
+  // deferred in <head>, so it may not be ready when this IIFE runs; init on
+  // DOMContentLoaded as a fallback.
+  function initTooltips() {
+    if (!window.tippy) return;
+    window.tippy(".info-icon", {
+      content: (ref) => ref.getAttribute("data-info") || "",
+      allowHTML: false,
+      trigger: "click",
+      hideOnClick: true,
+      placement: "bottom-start",
+      theme: "navy",
+      maxWidth: 360,
+      interactive: false,
+      appendTo: () => document.body,
+      offset: [0, 6],
+      popperOptions: {
+        modifiers: [
+          { name: "preventOverflow", options: { padding: 8 } },
+          { name: "flip", options: { fallbackPlacements: ["top-start", "top-end", "bottom-end"] } },
+        ],
+      },
     });
   }
-  document.addEventListener("click", (e) => {
-    const btn = e.target.closest(".info-icon");
-    if (btn) {
-      e.stopPropagation();
-      if (btn.getAttribute("aria-expanded") === "true") closePopover();
-      else openPopover(btn);
-      return;
-    }
-    if (!e.target.closest(".info-popover")) closePopover();
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closePopover();
-  });
+  if (window.tippy) initTooltips();
+  else window.addEventListener("DOMContentLoaded", initTooltips);
 
   // Auto-focus the amount input — does not pop the soft keyboard on mobile
   // (browsers require a user gesture for that), but shows the blinking caret.

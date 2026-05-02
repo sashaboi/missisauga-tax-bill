@@ -490,47 +490,7 @@ html, body {
   cursor: default;
 }
 
-/* Footnote markers in line items */
-.note-ref {
-  font-size: 10px;
-  color: var(--accent);
-  font-variant: normal;
-  letter-spacing: 0;
-  margin-left: 4px;
-  padding: 1px 4px;
-  border: 1px solid currentColor;
-  border-radius: 999px;
-  vertical-align: super;
-  line-height: 1;
-}
-
-/* Notes block (summary view) */
-.notes-block {
-  margin: 16px 0 0;
-  padding: 12px 16px;
-  background: #fffdf6;
-  border: 1px solid var(--rule);
-  border-left: 3px solid var(--accent);
-  border-radius: 2px;
-}
-.notes-block .notes-title {
-  font-variant: small-caps;
-  letter-spacing: 0.16em;
-  font-size: 11px;
-  color: var(--accent);
-  margin-bottom: 6px;
-}
-.notes-list {
-  margin: 0;
-  padding-left: 22px;
-  font-size: 12px;
-  color: var(--ink);
-}
-.notes-list .note-item { margin: 4px 0; }
-.notes-list .note-empty { color: var(--ink-soft); }
-.notes-list .note-placeholder { font-style: italic; color: var(--ink-soft); }
-
-/* Info icon + popover (used on any view that has items with `info` set). */
+/* Info icon (popovers powered by Tippy.js — see .tippy-box theming below). */
 .info-icon {
   display: inline-flex;
   align-items: center;
@@ -551,45 +511,34 @@ html, body {
   transition: background 0.12s ease, color 0.12s ease;
 }
 .info-icon:hover,
-.info-icon[aria-expanded="true"] {
+.info-icon[aria-describedby] {
   background: #1f2a44;
   color: #fff;
   border-color: #1f2a44;
 }
-/* Row that has an open tooltip stacks above later rows so the bubble is not covered. */
-.row:has(.info-popover) {
-  position: relative;
-  z-index: 25;
-}
 
-.info-popover {
-  --arrow-left: 10px;
-  position: absolute;
-  z-index: 1;
-  margin-top: 6px;
-  margin-left: -4px;
-  width: max-content;
-  max-width: min(560px, calc(100vw - 32px));
-  padding: 10px 14px;
+/* Tippy.js navy theme — matches the muni-blue ink we use elsewhere. */
+.tippy-box[data-theme~="navy"] {
+  background-color: #1f2a44;
+  color: #fff;
   font: 400 12px/1.45 "Helvetica Neue", Helvetica, Arial, sans-serif;
   letter-spacing: 0.01em;
-  color: #fff;
-  background: #1f2a44;
   border-radius: 6px;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.22);
 }
-.info-popover::before {
-  content: "";
-  position: absolute;
-  top: -5px;
-  left: var(--arrow-left);
-  width: 10px;
-  height: 10px;
-  background: #1f2a44;
-  transform: rotate(45deg);
+.tippy-box[data-theme~="navy"] .tippy-content { padding: 10px 14px; }
+.tippy-box[data-theme~="navy"][data-placement^="top"] > .tippy-arrow::before {
+  border-top-color: #1f2a44;
 }
-/* Make the desc-name a positioning context so the popover anchors to the icon. */
-.desc-name { position: relative; }
+.tippy-box[data-theme~="navy"][data-placement^="bottom"] > .tippy-arrow::before {
+  border-bottom-color: #1f2a44;
+}
+.tippy-box[data-theme~="navy"][data-placement^="left"] > .tippy-arrow::before {
+  border-left-color: #1f2a44;
+}
+.tippy-box[data-theme~="navy"][data-placement^="right"] > .tippy-arrow::before {
+  border-right-color: #1f2a44;
+}
 
 /* Print */
 @media print {
