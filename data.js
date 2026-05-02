@@ -1,94 +1,78 @@
-// Source: "Tax invoice ver 4.xlsx" — two sheets:
-//   1) "Combined budget with net adjust"  → TAX_DATA.detailed   (used by /)
-//   2) "Summary tax invoice"              → TAX_DATA.summary    (used by /summary)
+// Source: "Tax bill explainer version 6 for Onkar.xlsx"
+//   - Active sheet: "Tax calulator sheet 2" (sheet 3) — 31 service lines
+//   - Sheet 1 ("Worksheet") shows how Mississauga Corporate Transactions,
+//     One-time Reserves, and the Capital Infrastructure & Debt Repayment Levy
+//     are pro-rata allocated across each Mississauga service area, so each
+//     line below already includes its share. Peel lines are the Mississauga
+//     share of the Peel budget (≈57.72%, 62.02% for Police).
 //
-// Both share the same basis (B2 = 1,871,900.7984 = sum of all detailed rows).
 // Each line item allocates by the spreadsheet formula:
-//   amount(row) = (userTax * B[row]) / B$2
+//   amount(row) = (userMunicipalTax * B[row]) / B$33
+// where B$33 == basisTotal and userMunicipalTax = userTax * municipalShare.
 //
-// section: "Mississauga" | "Peel" | "Combined" | "Other"
-//   - "Combined" is summary-only, for rows that merge Mississauga + Peel.
+// 15% of the resident's total tax is the Province of Ontario education
+// share, rendered as a separate line and a summary card. Source:
+//   https://www.mississauga.ca/city-of-mississauga-news/news/mississaugas-2026-budget-adopted/
+//   "City of Mississauga 37%, Region of Peel 48%, Province of Ontario 15%."
+//
+// section: "Mississauga" | "Peel" | "Other" | "Education"
 
 window.TAX_DATA = {
-  defaultTax: 8000,
-  basisTotal: 1871900.7984,
+  defaultTax: 7000,
+  municipalShare: 0.85,
+  educationShare: 0.15,
+  basisTotal: 1863397268.75,
 
   detailed: {
     items: [
-      { name: "Peel Regional Police",                                       budget: 519048.326,        section: "Peel" },
-      { name: "Mississauga Fire",                                           budget: 182786,            section: "Mississauga" },
-      { name: "Peel Housing",                                               budget: 145050.2584128,    section: "Peel",        info: "Region of Peel\u2019s funding for subsidized housing initiatives" },
-      { name: "Mississauga General Government",                             budget: 140636,            section: "Mississauga", info: "Corporate Business Services, Finance, Human Resources, Internal Audit, Legal Services, Legislative Services, the Office of Emergency Management, and Strategic Communications & Initiatives. Also includes Corporate Transactions." },
-      { name: "Mississauga Transit (MiWay)",                                budget: 130287,            section: "Mississauga" },
-      { name: "Mississauga Roads & Winter Maintenance",                     budget: 110659,            section: "Mississauga" },
-      { name: "Peel Garbage Collection",                                    budget: 83127.6388,        section: "Peel" },
-      { name: "Peel Paramedic Services",                                    budget: 74041.4336064,     section: "Peel" },
-      { name: "Peel Roads & Winter Maintenance",                            budget: 64695.57744,       section: "Peel" },
-      { name: "Mississauga Parks and Forestry",                             budget: 45020,             section: "Mississauga" },
-      { name: "Mississauga Information Technology",                         budget: 41169,             section: "Mississauga" },
-      { name: "Peel Seniors Services",                                      budget: 36891.7749408,     section: "Peel",        info: "Long-term care and adult day programs for a growing population." },
-      { name: "Mississauga Recreation & Culture",                           budget: 33970,             section: "Mississauga" },
-      { name: "Mississauga Library",                                        budget: 32130,             section: "Mississauga" },
-      { name: "Peel Public Health",                                         budget: 27110.5068,        section: "Peel" },
-      { name: "Mississauga Facilities & Property Management",               budget: 24654,             section: "Mississauga", info: "Planning, design, construction and compliance of new and existing City facilities." },
-      { name: "Conservation Authorities",                                   budget: 21121.28,          section: "Other",       info: "Manage the natural resources and natural hazards in various jurisdictions." },
-      { name: "Peel TransHelp",                                             budget: 20891.1768,        section: "Peel" },
-      { name: "Peel Income Support",                                        budget: 20081.3652,        section: "Peel",        info: "Provide application and assessment services for income and support programs such as Ontario Works, Child Care Fee Subsidy, and emergency assistance programs." },
-      { name: "Mississauga Planning & Building",                            budget: 18342,             section: "Mississauga", info: "Includes zoning, building permits, and community land use planning." },
-      { name: "Mississauga By-Law and Enforcement",                         budget: 16572,             section: "Mississauga" },
-      { name: "Peel Business Services & Clerks",                            budget: 13614.4164,        section: "Peel",        info: "Climate Change and Energy Management, Communications, Culture and Inclusion (C&I), Finance, Government Relations, Human Resources (HR), Internal Audit, Legal Services, Procurement, Service Peel, Strategy and Transformation, and the Office of the Chief Administrative Officer." },
-      { name: "Municipal Property Assessment Corporation (MPAC)",           budget: 12263.52,          section: "Other" },
-      { name: "Peel Subsidized Child Care",                                 budget: 11901.2868,        section: "Peel" },
-      { name: "Peel Information Technology",                                budget: 11090.3208,        section: "Peel" },
-      { name: "Peel Community Investment",                                  budget: 10985.2704,        section: "Peel",        info: "Grants to not-for-profits via the Community Investment Program (CIP) to strengthen social services and support vulnerable residents." },
-      { name: "Mississauga Capital Infrastructure & Debt Repayment Levy",   budget: 7480,              section: "Mississauga", info: "Maintain the $18.7 billion of capital infrastructure owned by the City in a state of good repair." },
-      { name: "Mississauga Mayor & Members of Council",                     budget: 5716,              section: "Mississauga" },
-      { name: "Peel Heritage, Arts & Culture",                              budget: 3543.4308,         section: "Peel" },
-      { name: "Peel Facilities & Property Management",                      budget: 3471.858,          section: "Peel",        info: "Planning, design, construction and compliance of new and existing Regional facilities." },
-      { name: "Peel Planning & Building (Development Services)",            budget: 2492.9268,         section: "Peel",        info: "Municipal land development applications and growth forecasts." },
-      { name: "Peel Regional Council & Chair",                              budget: 1057.4304,         section: "Peel" },
-    ],
-  },
-
-  // Rolled-up view: cross-authority services merged into combined rows.
-  // Footnote numbers attach to specific items.
-  summary: {
-    items: [
-      { name: "Peel Regional Police",                                       budget: 519048.326,        section: "Peel" },
-      { name: "Mississauga Fire",                                           budget: 182786,            section: "Mississauga" },
-      { name: "Mississauga and Peel Roads & Winter Maintenance",            budget: 175355,            section: "Combined" },
-      { name: "Peel Housing",                                               budget: 145050.2584128,    section: "Peel",        note: 1, info: "Region of Peel\u2019s funding for subsidized housing initiatives" },
-      { name: "Mississauga General Government",                             budget: 140636,            section: "Mississauga", note: 2, info: "Corporate Business Services, Finance, Human Resources, Internal Audit, Legal Services, Legislative Services, the Office of Emergency Management, and Strategic Communications & Initiatives. Also includes Corporate Transactions." },
-      { name: "Mississauga Transit (MiWay)",                                budget: 130287,            section: "Mississauga" },
-      { name: "Peel Garbage Collection",                                    budget: 83127.6388,        section: "Peel" },
-      { name: "Peel Paramedic Services",                                    budget: 74041.4336064,     section: "Peel" },
-      { name: "Mississauga and Peel Information Technology",                budget: 52259.3208,        section: "Combined" },
-      { name: "Mississauga Parks and Forestry",                             budget: 45020,             section: "Mississauga" },
-      { name: "Mississauga and Peel Recreation & Culture",                  budget: 41056.8616,        section: "Combined",    note: 3 },
-      { name: "Peel Seniors Services",                                      budget: 36891.7749408,     section: "Peel",        info: "Long-term care and adult day programs for a growing population." },
-      { name: "Mississauga Library",                                        budget: 32130,             section: "Mississauga" },
-      { name: "Mississauga and Peel Building Maintenance",                  budget: 28125.858,         section: "Combined" },
-      { name: "Peel Public Health",                                         budget: 27110.5068,        section: "Peel" },
-      { name: "Conservation Authorities",                                   budget: 21121.28,          section: "Other",       info: "Manage the natural resources and natural hazards in various jurisdictions." },
-      { name: "Peel TransHelp",                                             budget: 20891.1768,        section: "Peel" },
-      { name: "Mississauga and Peel Planning Services",                     budget: 20834.9268,        section: "Combined",    note: 4, info: "Includes zoning, building permits, and community land use planning." },
-      { name: "Peel Income Support",                                        budget: 20081.3652,        section: "Peel",        info: "Provide application and assessment services for income and support programs such as Ontario Works, Child Care Fee Subsidy, and emergency assistance programs." },
-      { name: "Mississauga By-Law and Enforcement",                         budget: 16572,             section: "Mississauga" },
-      { name: "Peel Business Services & Clerks",                            budget: 13614.4164,        section: "Peel",        info: "Climate Change and Energy Management, Communications, Culture and Inclusion (C&I), Finance, Government Relations, Human Resources (HR), Internal Audit, Legal Services, Procurement, Service Peel, Strategy and Transformation, and the Office of the Chief Administrative Officer." },
-      { name: "Municipal Property Assessment Corporation (MPAC)",           budget: 12263.52,          section: "Other" },
-      { name: "Peel Subsidized Child Care",                                 budget: 11901.2868,        section: "Peel" },
-      { name: "Peel Community Investment",                                  budget: 10985.2704,        section: "Peel",        note: 5, info: "Grants to not-for-profits via the Community Investment Program (CIP) to strengthen social services and support vulnerable residents." },
-      { name: "Mississauga Capital Infrastructure & Debt Repayment Levy",   budget: 7480,              section: "Mississauga", note: 6, info: "Maintain the $18.7 billion of capital infrastructure owned by the City in a state of good repair." },
-      { name: "Mississauga Mayor & Members of Council",                     budget: 5716,              section: "Mississauga" },
-      { name: "Peel Regional Council & Chair",                              budget: 1057.4304,         section: "Peel" },
+      { name: "Peel Regional Police",                                       budget: 519499290.90,    section: "Peel" },
+      { name: "Mississauga Fire & Emergency Services",                      budget: 204142271.91,    section: "Mississauga" },
+      { name: "Mi Way",                                                     budget: 145509416.37,    section: "Mississauga" },
+      { name: "Peel Housing Support",                                       budget: 142005726.24,    section: "Peel",        note: 4,  info: "Region of Peel\u2019s funding for subsidized housing initiatives." },
+      { name: "Mississauga Roads & Winter Maintenance",                     budget: 123588128.56,    section: "Mississauga" },
+      { name: "Peel Garbage Collection",                                    budget: 83105803.24,     section: "Peel" },
+      { name: "Peel Paramedic Services",                                    budget: 74148812.35,     section: "Peel" },
+      { name: "Mississauga General Government",                             budget: 73187482.74,     section: "Mississauga", note: 1,  info: "Salaries and other overhead for back office services like Finance, Human Resources, Internal Audit, and Communications." },
+      { name: "Peel Roads & Winter Maintenance",                            budget: 61589805.72,     section: "Peel" },
+      { name: "Mississauga Parks, Forestry & Environment",                  budget: 50280027.36,     section: "Mississauga" },
+      { name: "Mississauga Information Technology",                         budget: 45979085.88,     section: "Mississauga" },
+      { name: "Mississauga Recreation & Culture",                           budget: 37938972.22,     section: "Mississauga", note: 14, info: "Community centres, golf courses, sports fields, sports arenas, swimming pools, and support for arts and culture." },
+      { name: "Peel Seniors Services",                                      budget: 36284843.24,     section: "Peel",        note: 5,  info: "Long-term care and adult day programs for a growing population." },
+      { name: "Mississauga Library",                                        budget: 35883991.10,     section: "Mississauga" },
+      { name: "Mississauga Facilities & Property Management",               budget: 27534513.43,     section: "Mississauga", note: 2,  info: "Planning and design of new facilities and maintenance of existing City facilities." },
+      { name: "Peel Public Health",                                         budget: 26847057.03,     section: "Peel" },
+      { name: "Conservation Authorities",                                   budget: 21018056.02,     section: "Other",       note: 11, info: "Mississauga\u2019s share of funding for Credit Valley Conservation, Toronto and Region Conservation Authority, and Halton Conservation Authority." },
+      { name: "Peel Trans Help",                                            budget: 20657129.30,     section: "Peel" },
+      { name: "Mississauga Planning & Building",                            budget: 20485034.69,     section: "Mississauga", note: 3,  info: "Processing development applications from developers and residents \u2014 rezoning, site plan approval, and building permits." },
+      { name: "Peel Income Support",                                        budget: 19936353.44,     section: "Peel",        note: 6,  info: "Back-office costs to deliver income support programs (Ontario Works, subsidized child care). Provincial dollars don\u2019t cover these; municipalities do." },
+      { name: "Mississauga Regulatory Services",                            budget: 18508232.20,     section: "Mississauga", note: 15, info: "By-law enforcement." },
+      { name: "Peel Business Services",                                     budget: 12717116.20,     section: "Peel",        note: 7,  info: "Salaries and other overhead for services like climate change, communications, finance, HR, internal audit, and procurement." },
+      { name: "Municipal Property Assessment Corporation (MPAC)",           budget: 12203519.67,     section: "Other",       note: 12, info: "Decides the value of your home, on which property taxes are calculated." },
+      { name: "Peel Early Years and Child Care",                            budget: 11698332.97,     section: "Peel" },
+      { name: "Peel Community Investment",                                  budget: 10981164.37,     section: "Peel",        note: 8,  info: "Grants to non-profits that provide services and support to vulnerable residents." },
+      { name: "Peel Information and Technology",                            budget: 10851328.25,     section: "Peel" },
+      { name: "Mississauga Mayor & Members of Council",                     budget: 6383843.55,      section: "Mississauga" },
+      { name: "Peel Heritage, Arts and Culture",                            budget: 3504889.63,      section: "Peel" },
+      { name: "Peel Property Management",                                   budget: 3393559.07,      section: "Peel",        note: 9,  info: "Operations and maintenance of Peel facilities and planning and leasing of new facilities." },
+      { name: "Peel Development Services",                                  budget: 2482851.79,      section: "Peel",        note: 10, info: "Input into City of Mississauga development applications to ensure infrastructure keeps up with growth." },
+      { name: "Peel Regional Chair and Council",                            budget: 1050629.31,      section: "Peel" },
     ],
     notes: [
-      { mark: 1, text: "" },
-      { mark: 2, text: "Mississauga Government includes Finance, Human Resources, Internal Audit, Legal Services, Communications and Emergency Management, Integrity Commissioner, Tourism Mississauga, and financial transactions." },
-      { mark: 3, text: "" },
-      { mark: 4, text: "" },
-      { mark: 5, text: "" },
-      { mark: 6, text: "" },
+      { mark: 1,  text: "Salaries and other overhead for back office services like Finance, Human Resources, Internal Audit, and Communications." },
+      { mark: 2,  text: "Planning and design of new facilities and maintenance of existing facilities." },
+      { mark: 3,  text: "Processing development applications from developers and residents including rezoning, site plan approval, and building permits." },
+      { mark: 4,  text: "Subsidized housing." },
+      { mark: 5,  text: "Long-term care and adult day programs." },
+      { mark: 6,  text: "Back-office costs to deliver income support programs (Ontario Works, subsidized child care). These are not paid by the province and are paid by municipalities." },
+      { mark: 7,  text: "Salaries and other overhead for services like climate change, communications, finance, HR, internal audit, and procurement." },
+      { mark: 8,  text: "Grants to non-profits that provide services and support to vulnerable residents." },
+      { mark: 9,  text: "Operations and maintenance of Peel facilities and planning and leasing of new facilities." },
+      { mark: 10, text: "Input into City of Mississauga development applications to ensure infrastructure keeps up with growth." },
+      { mark: 11, text: "Mississauga\u2019s share of funding for Credit Valley Conservation, Toronto and Region Conservation Authority, and Halton Conservation Authority." },
+      { mark: 12, text: "Decides the value of your home, on which property taxes are calculated." },
+      { mark: 13, text: "Education tax. The City does not receive this; it collects it on behalf of school boards." },
+      { mark: 14, text: "Community centres, golf courses, sports fields, sports arenas, swimming pools, and support for arts and culture." },
+      { mark: 15, text: "By-law enforcement." },
     ],
   },
 };

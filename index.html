@@ -21,7 +21,6 @@
         <div class="subtitle">An itemized breakdown of where your tax dollars go</div>
         <nav class="view-nav no-print" aria-label="View">
           <a href="./" class="view-link is-active" aria-current="page">Detailed</a>
-          <a href="./summary.html" class="view-link">Summary</a>
           <a href="./invoice.html" class="view-link">Invoice</a>
         </nav>
       </div>
@@ -50,7 +49,7 @@
             type="text"
             inputmode="numeric"
             autocomplete="off"
-            value="8000"
+            value="7000"
             autofocus
             aria-label="Total property tax paid"
           />
@@ -60,13 +59,17 @@
     </section>
 
     <section class="summary" aria-label="Summary by authority">
+      <div class="summary-card" data-section="Mississauga">
+        <div class="summary-label">City of Mississauga</div>
+        <div class="summary-amt" id="sub-mississauga">—</div>
+      </div>
       <div class="summary-card" data-section="Peel">
         <div class="summary-label">Region of Peel</div>
         <div class="summary-amt" id="sub-peel">—</div>
       </div>
-      <div class="summary-card" data-section="Mississauga">
-        <div class="summary-label">City of Mississauga</div>
-        <div class="summary-amt" id="sub-mississauga">—</div>
+      <div class="summary-card" data-section="Education">
+        <div class="summary-label">Province of Ontario</div>
+        <div class="summary-amt" id="sub-education">—</div>
       </div>
     </section>
 
@@ -95,9 +98,11 @@
         operating budget proportions for tax-supported services in Mississauga and the
         Region of Peel. Your actual bill from the City may differ slightly due to special
         levies, area-rated charges, and assessment adjustments.</p>
-        <p class="fineprint">This is a citizen-facing visualization, not an official bill.
-        Source: budget figures provided by the user (in $ thousands). Total budget basis:
-        <span id="basisTotal">—</span>.</p>
+        <p class="fineprint"><strong>Not an official bill.</strong> This is an app
+        that lets Mississauga residents see how their property tax dollars are
+        distributed across services. The City of Mississauga does not issue this
+        statement. It does not work for residents of other cities. Total municipal
+        operating budget basis: <span id="basisTotal">—</span>.</p>
       </div>
       <div class="actions no-print">
         <button id="printBtn" class="btn">Print / Save as PDF</button>
@@ -107,9 +112,10 @@
 
   <footer class="disclaimer-banner" role="note">
     <strong>Not an official bill.</strong>
-    Illustrative breakdown of where your property tax goes — figures are
-    proportional estimates from the published Mississauga &amp; Peel budgets,
-    not amounts owed to or issued by either government.
+    This is an app that lets Mississauga residents see how their property
+    tax dollars are distributed across services. The City of Mississauga
+    does not issue this statement and it does not work for residents of
+    other cities.
   </footer>
 
   <script src="data.js"></script>

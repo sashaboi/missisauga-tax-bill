@@ -2,20 +2,20 @@
   "use strict";
 
   const view = document.body.dataset.view || "detailed";
-  // The "invoice" view renders the detailed dataset in a different chrome.
-  const dataKey = view === "summary" ? "summary" : "detailed";
   const D = window.TAX_DATA;
   const basisTotal = D.basisTotal;
-  const dataset = D[dataKey];
+  const municipalShare = typeof D.municipalShare === "number" ? D.municipalShare : 0.85;
+  const educationShare = typeof D.educationShare === "number" ? D.educationShare : 0.15;
+  const dataset = D.detailed;
   const items = dataset.items;
   const notes = dataset.notes || [];
 
-  // Math follows the source spreadsheet exactly:
-  //   amount(row) = (userTax * B[row]) / B$2
-  // where B$2 == basisTotal. The detailed view reconciles to the user's
-  // input. The summary view is ~$15 over per $8,000 because the source
-  // sheet's "Recreation & Culture" combined row double-counts Peel
-  // Heritage; we surface this in the UI rather than silently fixing it.
+  // Math follows the source spreadsheet (v6 "Tax calulator sheet 2"):
+  //   userMunicipal = userTax * 0.85   (collected for Mississauga + Peel services)
+  //   userEducation = userTax * 0.15   (collected on behalf of school boards)
+  //   amount(row)   = userMunicipal * (B[row] / B$33)
+  // Education tax is rendered as its own line / summary card; it is NOT
+  // allocated across any service.
 
   const fmtMoney = (n) =>
     n.toLocaleString("en-CA", {
@@ -28,27 +28,27 @@
   const AUTHORITY_LABEL = {
     Peel: "Region of Peel",
     Mississauga: "City of Mississauga",
-    Combined: "Mississauga + Peel",
     Other: "",
+    Education: "Province of Ontario",
   };
 
   const summaryEls = {
     Peel:        { sub: "sub-peel" },
     Mississauga: { sub: "sub-mississauga" },
-    Combined:    { sub: "sub-combined" },
+    Education:   { sub: "sub-education" },
   };
 
-  // One combined, sorted list (largest first).
+  // Largest first.
   let sorted = items.slice().sort((a, b) => b.budget - a.budget);
 
-  // Invoice view: Mississauga + Peel pairs stay as two rows but appear consecutively
-  // (City first, Region second) when the first of the pair is reached in budget order.
+  // Invoice view: keep Mississauga + Peel pairs as two rows, listed back-to-back
+  // (City first, Region second), at the slot of whichever appears first in budget order.
   if (view === "invoice") {
     const PAIRS = [
       ["Mississauga Roads & Winter Maintenance", "Peel Roads & Winter Maintenance"],
-      ["Mississauga Information Technology", "Peel Information Technology"],
-      ["Mississauga Facilities & Property Management", "Peel Facilities & Property Management"],
-      ["Mississauga Planning & Building", "Peel Planning & Building (Development Services)"],
+      ["Mississauga Information Technology", "Peel Information and Technology"],
+      ["Mississauga Facilities & Property Management", "Peel Property Management"],
+      ["Mississauga Planning & Building", "Peel Development Services"],
     ];
     const byName = new Map(sorted.map((x) => [x.name, x]));
     const pairKey = new Map();
@@ -80,9 +80,14 @@
   const maxShare = sorted[0].budget / basisTotal;
 
   const rowsEl = document.getElementById("rows");
-  sorted.forEach((item, i) => {
-    const share = item.budget / basisTotal;
-    const barW = Math.max(2, (share / maxShare) * 100);
+
+  function renderRow(item, displayIndex, opts = {}) {
+    const isEducation = !!opts.isEducation;
+    const share = isEducation ? 0 : item.budget / basisTotal;
+    const barW = isEducation
+      ? Math.max(2, (educationShare / Math.max(municipalShare * maxShare, educationShare)) * 100)
+      : Math.max(2, (share / maxShare) * 100);
+
     const noteMark = item.note
       ? `<sup class="note-ref">[${item.note}]</sup>`
       : "";
@@ -92,23 +97,40 @@
       : "";
 
     const row = document.createElement("div");
-    row.className = "row";
-    row.dataset.share = String(share);
+    row.className = "row" + (isEducation ? " row-education" : "");
     row.dataset.section = item.section;
+    if (isEducation) {
+      row.dataset.eduShare = String(educationShare);
+    } else {
+      row.dataset.share = String(share);
+    }
 
     row.innerHTML = `
-      <div class="col col-num">${i + 1}</div>
+      <div class="col col-num">${displayIndex}</div>
       <div class="col col-desc">
         <div class="desc-name">${item.name}${noteMark}${infoIcon}</div>
         <div class="desc-bar"><span class="bar-${item.section}" style="width:${barW.toFixed(2)}%"></span></div>
       </div>
-      <div class="col col-auth auth-${item.section}">${AUTHORITY_LABEL[item.section]}</div>
+      <div class="col col-auth auth-${item.section}">${AUTHORITY_LABEL[item.section] || ""}</div>
       <div class="col col-amt" data-amt>—</div>
     `;
     rowsEl.appendChild(row);
-  });
+  }
 
-  // Render the notes block (summary view only).
+  sorted.forEach((item, i) => renderRow(item, i + 1));
+
+  // Synthetic Education Tax line — always appears last.
+  const educationItem = {
+    name: "Education Tax",
+    section: "Education",
+    note: 13,
+    info:
+      "Province of Ontario education share. The City does not receive this; it collects it on behalf of school boards. " +
+      "Source: City of Mississauga 2026 Budget breakdown (City 37%, Peel 48%, Education 15%).",
+  };
+  renderRow(educationItem, sorted.length + 1, { isEducation: true });
+
+  // Render notes block if the page provides one.
   const notesList = document.getElementById("notesList");
   if (notesList) {
     if (notes.length === 0) {
@@ -128,22 +150,30 @@
   }
 
   function recalc(userTax) {
-    const totals = { Peel: 0, Mississauga: 0, Combined: 0, Other: 0 };
-    let allocated = 0;
+    const userMunicipal = userTax * municipalShare;
+    const userEducation = userTax * educationShare;
+
+    const totals = { Peel: 0, Mississauga: 0, Other: 0, Education: 0 };
+    let displayedTotal = 0;
+
     document.querySelectorAll(".row").forEach((row) => {
-      const share = Number(row.dataset.share);
-      const amt = userTax * share;
-      totals[row.dataset.section] += amt;
-      allocated += amt;
-      row.querySelector("[data-amt]").textContent = fmtMoney(amt);
+      const isEdu = row.dataset.eduShare !== undefined;
+      const amt = isEdu
+        ? userEducation
+        : userMunicipal * Number(row.dataset.share || 0);
+      totals[row.dataset.section] = (totals[row.dataset.section] || 0) + amt;
+      displayedTotal += amt;
+      const amtEl = row.querySelector("[data-amt]");
+      if (amtEl) amtEl.textContent = fmtMoney(amt);
     });
 
     for (const section of Object.keys(summaryEls)) {
       const el = document.getElementById(summaryEls[section].sub);
-      if (el) el.textContent = fmtMoney(totals[section]);
+      if (el) el.textContent = fmtMoney(totals[section] || 0);
     }
 
-    document.getElementById("grandTotal").textContent = fmtMoney(allocated);
+    const grandEl = document.getElementById("grandTotal");
+    if (grandEl) grandEl.textContent = fmtMoney(displayedTotal);
   }
 
   function setMeta() {
@@ -160,7 +190,7 @@
 
     const basisEl = document.getElementById("basisTotal");
     if (basisEl) {
-      basisEl.textContent = fmtMoney(basisTotal * 1000) + " (operating budget)";
+      basisEl.textContent = fmtMoney(basisTotal) + " (operating budget)";
     }
 
     // Invoice view extras: invoice number + due date.
@@ -243,6 +273,21 @@
     pop.textContent = text;
     btn.insertAdjacentElement("afterend", pop);
     btn.setAttribute("aria-expanded", "true");
+    // After layout, shift the popover left so it stays inside the viewport,
+    // and keep the arrow visually anchored over the icon.
+    requestAnimationFrame(() => {
+      const margin = 12;
+      const popRect = pop.getBoundingClientRect();
+      const overflowRight = popRect.right - (window.innerWidth - margin);
+      if (overflowRight > 0) {
+        const allowedShift = Math.max(0, popRect.left - margin);
+        const shift = Math.min(overflowRight, allowedShift);
+        if (shift > 0) {
+          pop.style.transform = `translateX(-${shift}px)`;
+          pop.style.setProperty("--arrow-left", `${10 + shift}px`);
+        }
+      }
+    });
   }
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".info-icon");

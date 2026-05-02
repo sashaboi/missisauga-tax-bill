@@ -223,8 +223,15 @@ html, body {
 }
 .bar-Peel        { background: linear-gradient(90deg, #6e0d25, #a8324a); }
 .bar-Mississauga { background: linear-gradient(90deg, #2c4267, #4663a0); }
-.bar-Combined    { background: linear-gradient(90deg, #2c4267, #6e0d25); }
 .bar-Other       { background: linear-gradient(90deg, #6b5a1d, #b8860b); }
+.bar-Education   { background: linear-gradient(90deg, #2f5d3a, #58a06a); }
+
+/* Education row sits beneath the municipal services with a subtle break. */
+.row.row-education {
+  border-top: 1px solid var(--rule-strong);
+  background: rgba(244, 252, 246, 0.65);
+}
+.row.row-education .desc-name { font-weight: 600; }
 
 /* Authority column — plain colored text (no pill) */
 .col-auth {
@@ -235,8 +242,8 @@ html, body {
 }
 .auth-Peel        { color: #6e0d25; }
 .auth-Mississauga { color: #2c4267; }
-.auth-Combined    { color: #5a3a52; }
 .auth-Other       { color: #6b5a1d; }
+.auth-Education   { color: #2f5d3a; }
 
 /* Summary cards above the line items — compact one row */
 .summary {
@@ -260,8 +267,8 @@ html, body {
 }
 .summary-card[data-section="Peel"]        { color: #6e0d25; }
 .summary-card[data-section="Mississauga"] { color: #2c4267; }
-.summary-card[data-section="Combined"]    { color: #5a3a52; }
 .summary-card[data-section="Other"]       { color: #6b5a1d; }
+.summary-card[data-section="Education"]   { color: #2f5d3a; }
 .summary-label {
   font-variant: small-caps;
   letter-spacing: 0.12em;
@@ -556,6 +563,7 @@ html, body {
 }
 
 .info-popover {
+  --arrow-left: 10px;
   position: absolute;
   z-index: 1;
   margin-top: 6px;
@@ -574,7 +582,7 @@ html, body {
   content: "";
   position: absolute;
   top: -5px;
-  left: 10px;
+  left: var(--arrow-left);
   width: 10px;
   height: 10px;
   background: #1f2a44;
@@ -880,6 +888,13 @@ body[data-view="invoice"] .row {
   padding: 0;
 }
 body[data-view="invoice"] .row:last-child { border-bottom: 0; }
+
+/* Education tax row in the invoice — heavier separator above. */
+body[data-view="invoice"] .row.row-education {
+  border-top: 1.5px solid var(--inv-line);
+  background: #f6fbf8;
+}
+body[data-view="invoice"] .row.row-education .desc-name { font-weight: 700; }
 
 /* Hide chrome we don't want in the invoice. */
 body[data-view="invoice"] .col-num,
