@@ -560,10 +560,15 @@ body[data-view="invoice"] {
   --inv-strip-soft: #eef0f3;  /* faint gray for table head */
   --inv-line: #1a1a1a;        /* dark border */
   --inv-line-soft: #c9cdd3;
-  background:
-    radial-gradient(1200px 600px at 50% -20%, #eef2f6 0%, #e6ecf2 60%, #dde3ea 100%);
+  background: #fff;
   font-family: "Helvetica Neue", Helvetica, Arial, "Segoe UI", system-ui, sans-serif;
   color: var(--inv-ink);
+}
+
+/* Reach up to <html> so overscroll / area below body shows white instead of
+   the ochre parchment used on the Detailed view. */
+html:has(body[data-view="invoice"]) {
+  background: #fff;
 }
 
 body[data-view="invoice"] .page.invoice-page {
