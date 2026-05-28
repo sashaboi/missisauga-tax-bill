@@ -1,127 +1,90 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Your Property Tax Invoice — Where Your Dollars Go</title>
+  <title>Your Property Tax: Explained</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tippy.js@6/dist/tippy.css" />
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2/dist/umd/popper.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/tippy.js@6/dist/tippy-bundle.umd.min.js" defer></script>
 </head>
-<body data-view="detailed">
-  <main class="page" id="invoice">
-    <header class="letterhead">
-      <div class="crest" aria-hidden="true">
-        <svg viewBox="0 0 64 64" width="56" height="56">
-          <circle cx="32" cy="32" r="30" fill="none" stroke="#1f2a44" stroke-width="2"/>
-          <path d="M16 44 L32 16 L48 44 Z" fill="none" stroke="#b8860b" stroke-width="2"/>
-          <circle cx="32" cy="36" r="4" fill="#b8860b"/>
-        </svg>
-      </div>
-      <div class="masthead">
-        <h1 class="title">Your Property Tax Invoice</h1>
-        <div class="subtitle">An itemized breakdown of where your tax dollars go</div>
-        <nav class="view-nav no-print" aria-label="View">
-          <a href="./" class="view-link is-active" aria-current="page">Detailed</a>
-          <a href="./invoice.html" class="view-link">Invoice</a>
-        </nav>
-      </div>
-      <div class="meta">
-        <div><span class="meta-label">Issue&nbsp;Date</span><span class="meta-value" id="issueDate">—</span></div>
-        <div><span class="meta-label">Tax&nbsp;Year</span><span class="meta-value" id="taxYear">—</span></div>
-        <div class="meta-for show-sm">
-          <span class="meta-label">For</span>
-          <span class="meta-value">Annual Property Tax</span>
-        </div>
+
+<body data-view="invoice">
+  <main class="page invoice-page">
+    <header class="inv-header">
+      <div class="inv-heading">
+        <h1 class="inv-title">Your Property Taxes: Explained</h1>
+        <p class="inv-subtitle">
+          Created by
+          <a class="inv-subtitle-link"
+            href="https://www.mississauga.ca/council/city-council-members/ward-7-councillor-dipika-damerla/"
+            target="_blank" rel="noopener noreferrer">Councillor Dipika Damerla</a>.
+        </p>
       </div>
     </header>
 
-    <section class="billto">
-      <div class="billto-block">
-        <div class="block-label">For</div>
-        <div class="block-value">Annual Property Tax</div>
-        <div class="block-sub">Tax-supported municipal services</div>
-      </div>
-      <div class="billto-block input-block">
-        <label class="block-label" for="taxAmount">Total Property Tax Paid</label>
-        <div class="amount-input">
-          <span class="currency">$</span>
-          <input
-            id="taxAmount"
-            type="text"
-            inputmode="numeric"
-            autocomplete="off"
-            value="7000"
-            autofocus
-            aria-label="Total property tax paid"
-          />
+    <section class="inv-parties">
+      <div class="inv-party">
+        <div class="inv-party-header">TOTAL PROPERTY TAX PAID</div>
+        <div class="inv-party-body inv-party-body--input">
+          <div class="amount-input">
+            <span class="currency">$</span>
+            <input id="taxAmount" type="text" inputmode="numeric" autocomplete="off" value="7000" autofocus
+              aria-label="Total property tax paid" />
+          </div>
+          <div class="inv-input-hint">Fill in your tax amount</div>
         </div>
-        <div class="block-sub">Fill in your tax amount here</div>
+      </div>
+      <div class="inv-party">
+        <div class="inv-party-header">PAID BY</div>
+        <div class="inv-party-body">
+          <div class="inv-party-name">PROPERTY OWNER</div>
+          <div>MISSISSAUGA, ON</div>
+          <div class="inv-year-row">
+            <label for="taxYearSelect">Tax year</label>
+            <select id="taxYearSelect" class="inv-year-select" aria-label="Tax year">
+              <option value="2026" selected>2026</option>
+              <option value="2025">2025</option>
+            </select>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="summary" aria-label="Summary by authority">
-      <div class="summary-card" data-section="Mississauga">
-        <div class="summary-label">City of Mississauga</div>
-        <div class="summary-amt" id="sub-mississauga">—</div>
+    <section class="inv-table-wrap" aria-label="Itemized tax breakdown">
+      <div class="inv-table">
+        <div class="inv-thead">
+          <div class="inv-th inv-th-desc">DESCRIPTION</div>
+          <div class="inv-th inv-th-amt">AMOUNT</div>
+        </div>
+        <div class="rows" id="rows"></div>
       </div>
-      <div class="summary-card" data-section="Peel">
-        <div class="summary-label">Region of Peel</div>
-        <div class="summary-amt" id="sub-peel">—</div>
-      </div>
-      <div class="summary-card" data-section="Education">
-        <div class="summary-label">Province of Ontario</div>
-        <div class="summary-amt" id="sub-education">—</div>
+
+      <div class="inv-total">
+        <div class="inv-total-label">TOTAL</div>
+        <div class="inv-total-amt" id="grandTotal">$0.00</div>
       </div>
     </section>
 
-    <section class="invoice-table" aria-label="Itemized tax breakdown">
-      <div class="table-head">
-        <div class="col col-num">#</div>
-        <div class="col col-desc"><span class="hide-sm">Service / </span>Description</div>
-        <div class="col col-auth">Authority</div>
-        <div class="col col-amt">Amount</div>
-      </div>
-
-      <div class="rows" id="rows"></div>
-
-      <div class="grand-total">
-        <div class="col col-num"></div>
-        <div class="col col-desc">Total Property Tax</div>
-        <div class="col col-auth"></div>
-        <div class="col col-amt" id="grandTotal">$0.00</div>
-      </div>
-    </section>
-
-    <section class="footnote">
-      <div class="stamp" aria-hidden="true">PAID&nbsp;·&nbsp;THANK&nbsp;YOU</div>
-      <div class="notes">
-        <p><strong>About this invoice.</strong> Allocations are based on the published
-        operating budget proportions for tax-supported services in Mississauga and the
-        Region of Peel. Your actual bill from the City may differ slightly due to special
-        levies, area-rated charges, and assessment adjustments.</p>
-        <p class="fineprint"><strong>Not an official bill.</strong> This is an app
-        that lets Mississauga residents see how their property tax dollars are
-        distributed across services. The City of Mississauga does not issue this
-        statement. It does not work for residents of other cities. Total municipal
-        operating budget basis: <span id="basisTotal">—</span>.</p>
-      </div>
+    <section class="inv-footer">
+      <p class="inv-fineprint" role="note">
+        <strong>Not an official bill.</strong>
+        This is an app that lets Mississauga residents see how their property
+        tax dollars are distributed across services. The City of Mississauga
+        does not issue this statement and it does not work for residents of
+        other cities. Total municipal operating budget basis:
+        <span id="basisTotal">—</span>.
+      </p>
       <div class="actions no-print">
         <button id="printBtn" class="btn">Print / Save as PDF</button>
       </div>
     </section>
   </main>
 
-  <footer class="disclaimer-banner" role="note">
-    <strong>Not an official bill.</strong>
-    This is an app that lets Mississauga residents see how their property
-    tax dollars are distributed across services. The City of Mississauga
-    does not issue this statement and it does not work for residents of
-    other cities.
-  </footer>
-
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
+
 </html>

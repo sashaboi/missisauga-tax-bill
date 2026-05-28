@@ -1,21 +1,17 @@
 (function () {
   "use strict";
 
-  const view = document.body.dataset.view || "detailed";
+  const view = document.body.dataset.view || "invoice";
   const D = window.TAX_DATA;
-  const basisTotal = D.basisTotal;
-  const municipalShare = typeof D.municipalShare === "number" ? D.municipalShare : 0.85;
-  const educationShare = typeof D.educationShare === "number" ? D.educationShare : 0.15;
-  const dataset = D.detailed;
-  const items = dataset.items;
-  const notes = dataset.notes || [];
+  const notes = D.notes || [];
+  const YEAR_STORAGE_KEY = "taxYear";
 
-  // Math follows the source spreadsheet (v6 "Tax calulator sheet 2"):
-  //   userMunicipal = userTax * 0.85   (collected for Mississauga + Peel services)
-  //   userEducation = userTax * 0.15   (collected on behalf of school boards)
-  //   amount(row)   = userMunicipal * (B[row] / B$33)
-  // Education tax is rendered as its own line / summary card; it is NOT
-  // allocated across any service.
+  const PAIRS = [
+    ["Mississauga Roads and  winter maintenance", "Peel Roads"],
+    ["Mississauga Information Technology", "Peel Information and Technology"],
+    ["Mississauga Facilities & Property Management", "Peel Real Property Asset Management"],
+    ["Mississauga Planning & Building", "Peel Development Services"],
+  ];
 
   const fmtMoney = (n) =>
     n.toLocaleString("en-CA", {
@@ -33,31 +29,56 @@
   };
 
   const summaryEls = {
-    Peel:        { sub: "sub-peel" },
+    Peel: { sub: "sub-peel" },
     Mississauga: { sub: "sub-mississauga" },
-    Education:   { sub: "sub-education" },
+    Education: { sub: "sub-education" },
   };
 
-  // Largest first.
-  let sorted = items.slice().sort((a, b) => b.budget - a.budget);
+  let activeYear;
+  let items;
+  let basisTotal;
+  let municipalShare;
+  let educationShare;
+  let sorted = [];
+  let maxShare = 0;
+  let tippyInstances = [];
 
-  // Invoice view: keep Mississauga + Peel pairs as two rows, listed back-to-back
-  // (City first, Region second), at the slot of whichever appears first in budget order.
-  if (view === "invoice") {
-    const PAIRS = [
-      ["Mississauga Roads & Winter Maintenance", "Peel Roads & Winter Maintenance"],
-      ["Mississauga Information Technology", "Peel Information and Technology"],
-      ["Mississauga Facilities & Property Management", "Peel Property Management"],
-      ["Mississauga Planning & Building", "Peel Development Services"],
-    ];
-    const byName = new Map(sorted.map((x) => [x.name, x]));
+  const rowsEl = document.getElementById("rows");
+  const input = document.getElementById("taxAmount");
+  const yearSelect = document.getElementById("taxYearSelect");
+
+  function getStoredYear() {
+    const stored = sessionStorage.getItem(YEAR_STORAGE_KEY);
+    if (stored && D.years[stored]) return Number(stored);
+    return D.defaultYear || 2026;
+  }
+
+  function persistYear(year) {
+    sessionStorage.setItem(YEAR_STORAGE_KEY, String(year));
+  }
+
+  function applyYearData(year) {
+    const yd = D.years[year];
+    if (!yd) return;
+    activeYear = year;
+    items = yd.items;
+    basisTotal = yd.basisTotal;
+    municipalShare = yd.municipalShare;
+    educationShare = yd.educationShare;
+  }
+
+  function sortItems(list) {
+    let out = list.slice().sort((a, b) => b.budget - a.budget);
+    if (view !== "invoice") return out;
+
+    const byName = new Map(out.map((x) => [x.name, x]));
     const pairKey = new Map();
     PAIRS.forEach((names, pi) => {
       names.forEach((n) => pairKey.set(n, pi));
     });
     const emittedPair = new Set();
-    const out = [];
-    for (const item of sorted) {
+    const paired = [];
+    for (const item of out) {
       const pi = pairKey.get(item.name);
       if (pi !== undefined) {
         if (emittedPair.has(pi)) continue;
@@ -65,21 +86,48 @@
         const a = byName.get(names[0]);
         const b = byName.get(names[1]);
         if (!a || !b) {
-          out.push(item);
+          paired.push(item);
           continue;
         }
         emittedPair.add(pi);
-        out.push(a, b);
+        paired.push(a, b);
         continue;
       }
-      out.push(item);
+      paired.push(item);
     }
-    sorted = out;
+    return paired;
   }
 
-  const maxShare = sorted[0].budget / basisTotal;
+  function destroyTooltips() {
+    tippyInstances.forEach((inst) => inst.destroy());
+    tippyInstances = [];
+  }
 
-  const rowsEl = document.getElementById("rows");
+  function initTooltips() {
+    if (!window.tippy) return;
+    destroyTooltips();
+    tippyInstances = window.tippy(".info-icon", {
+      content: (ref) => ref.getAttribute("data-info") || "",
+      allowHTML: false,
+      trigger: "click",
+      hideOnClick: true,
+      placement: "bottom-start",
+      theme: "navy",
+      maxWidth: 360,
+      interactive: false,
+      appendTo: () => document.body,
+      offset: [0, 6],
+      popperOptions: {
+        modifiers: [
+          { name: "preventOverflow", options: { padding: 8 } },
+          {
+            name: "flip",
+            options: { fallbackPlacements: ["top-start", "top-end", "bottom-end"] },
+          },
+        ],
+      },
+    });
+  }
 
   function renderRow(item, displayIndex, opts = {}) {
     const isEducation = !!opts.isEducation;
@@ -114,36 +162,26 @@
     rowsEl.appendChild(row);
   }
 
-  sorted.forEach((item, i) => renderRow(item, i + 1));
+  function renderAll() {
+    sorted = sortItems(items);
+    maxShare = sorted.length ? sorted[0].budget / basisTotal : 0;
 
-  // Synthetic Education Tax line — always appears last.
-  const educationItem = {
-    name: "Education Tax",
-    section: "Education",
-    note: 13,
-    info:
-      "Province of Ontario education share. The City does not receive this; it collects it on behalf of school boards. " +
-      "Source: City of Mississauga 2026 Budget breakdown (City 37%, Peel 48%, Education 15%).",
-  };
-  renderRow(educationItem, sorted.length + 1, { isEducation: true });
+    rowsEl.innerHTML = "";
+    sorted.forEach((item, i) => renderRow(item, i + 1));
 
-  // Render notes block if the page provides one.
-  const notesList = document.getElementById("notesList");
-  if (notesList) {
-    if (notes.length === 0) {
-      const wrap = document.getElementById("notesBlock");
-      if (wrap) wrap.style.display = "none";
-    } else {
-      for (const n of notes) {
-        const li = document.createElement("li");
-        li.className = "note-item" + (n.text ? "" : " note-empty");
-        li.value = n.mark;
-        li.innerHTML = n.text
-          ? n.text
-          : `<em class="note-placeholder">No description provided in the source sheet.</em>`;
-        notesList.appendChild(li);
-      }
-    }
+    const educationItem = {
+      name: "Education Tax",
+      section: "Education",
+      note: 13,
+      info:
+        "Province of Ontario education share (" +
+        activeYear +
+        "). The City does not receive this; it collects it on behalf of school boards.",
+    };
+    renderRow(educationItem, sorted.length + 1, { isEducation: true });
+
+    if (window.tippy) initTooltips();
+    recalc(taxValueFromInput());
   }
 
   function recalc(userTax) {
@@ -155,9 +193,7 @@
 
     document.querySelectorAll(".row").forEach((row) => {
       const isEdu = row.dataset.eduShare !== undefined;
-      const amt = isEdu
-        ? userEducation
-        : userMunicipal * Number(row.dataset.share || 0);
+      const amt = isEdu ? userEducation : userMunicipal * Number(row.dataset.share || 0);
       totals[row.dataset.section] = (totals[row.dataset.section] || 0) + amt;
       displayedTotal += amt;
       const amtEl = row.querySelector("[data-amt]");
@@ -176,36 +212,30 @@
   function setMeta() {
     const now = new Date();
     const yearEl = document.getElementById("taxYear");
-    if (yearEl) yearEl.textContent = String(now.getFullYear());
+    if (yearEl) yearEl.textContent = String(activeYear);
 
     const issueEl = document.getElementById("issueDate");
     if (issueEl) {
       issueEl.textContent = now.toLocaleDateString("en-CA", {
-        year: "numeric", month: "long", day: "numeric",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
     }
 
     const basisEl = document.getElementById("basisTotal");
     if (basisEl) {
-      basisEl.textContent = fmtMoney(basisTotal) + " (operating budget)";
-    }
-
-    // Invoice view extras: invoice number + due date.
-    const invNoEl = document.getElementById("invoiceNo");
-    if (invNoEl) {
-      const seed = Math.floor(100000 + Math.random() * 899999);
-      invNoEl.textContent = "#MIS-" + now.getFullYear() + "-" + seed;
-    }
-    const dueEl = document.getElementById("dueDate");
-    if (dueEl) {
-      const due = new Date(now.getFullYear(), 11, 31); // Dec 31 of current year
-      dueEl.textContent = due.toLocaleDateString("en-CA", {
-        year: "numeric", month: "long", day: "numeric",
-      });
+      basisEl.textContent = fmtMoney(basisTotal) + " (" + activeYear + " operating budget)";
     }
   }
 
-  const input = document.getElementById("taxAmount");
+  function onYearChange(year) {
+    applyYearData(year);
+    persistYear(year);
+    if (yearSelect) yearSelect.value = String(year);
+    setMeta();
+    renderAll();
+  }
 
   function parseTaxInput(str) {
     const digits = String(str ?? "").replace(/\D/g, "");
@@ -228,6 +258,25 @@
     input.value = formatTaxDisplay(taxValueFromInput());
   }
 
+  // Notes block (details view only).
+  const notesList = document.getElementById("notesList");
+  if (notesList) {
+    if (notes.length === 0) {
+      const wrap = document.getElementById("notesBlock");
+      if (wrap) wrap.style.display = "none";
+    } else {
+      for (const n of notes) {
+        const li = document.createElement("li");
+        li.className = "note-item" + (n.text ? "" : " note-empty");
+        li.value = n.mark;
+        li.innerHTML = n.text
+          ? n.text
+          : `<em class="note-placeholder">No description provided in the source sheet.</em>`;
+        notesList.appendChild(li);
+      }
+    }
+  }
+
   input.addEventListener("input", () => {
     recalc(taxValueFromInput());
   });
@@ -236,6 +285,13 @@
     syncTaxDisplayFormatted();
     recalc(taxValueFromInput());
   });
+
+  if (yearSelect) {
+    yearSelect.value = String(getStoredYear());
+    yearSelect.addEventListener("change", () => {
+      onYearChange(Number(yearSelect.value));
+    });
+  }
 
   const printBtn = document.getElementById("printBtn");
   if (printBtn) {
@@ -246,46 +302,20 @@
     });
   }
 
-  setMeta();
-  const startTax =
-    parseTaxInput(input.value) ||
-    (typeof window.TAX_DATA !== "undefined" && window.TAX_DATA.defaultTax) ||
-    0;
+  onYearChange(getStoredYear());
+
+  const startTax = parseTaxInput(input.value) || D.defaultTax || 0;
   input.value = formatTaxDisplay(startTax);
   recalc(startTax);
 
-  // Tooltips powered by Tippy.js (loaded via CDN). Tippy uses Popper.js, which
-  // is the same positioning engine Bootstrap's tooltips are built on, so flips
-  // and shifts when near the viewport edge happen automatically. Tippy is
-  // deferred in <head>, so it may not be ready when this IIFE runs; init on
-  // DOMContentLoaded as a fallback.
-  function initTooltips() {
-    if (!window.tippy) return;
-    window.tippy(".info-icon", {
-      content: (ref) => ref.getAttribute("data-info") || "",
-      allowHTML: false,
-      trigger: "click",
-      hideOnClick: true,
-      placement: "bottom-start",
-      theme: "navy",
-      maxWidth: 360,
-      interactive: false,
-      appendTo: () => document.body,
-      offset: [0, 6],
-      popperOptions: {
-        modifiers: [
-          { name: "preventOverflow", options: { padding: 8 } },
-          { name: "flip", options: { fallbackPlacements: ["top-start", "top-end", "bottom-end"] } },
-        ],
-      },
-    });
-  }
   if (window.tippy) initTooltips();
   else window.addEventListener("DOMContentLoaded", initTooltips);
 
-  // Auto-focus the amount input — does not pop the soft keyboard on mobile
-  // (browsers require a user gesture for that), but shows the blinking caret.
   requestAnimationFrame(() => {
-    try { input.focus({ preventScroll: true }); } catch (_) { input.focus(); }
+    try {
+      input.focus({ preventScroll: true });
+    } catch (_) {
+      input.focus();
+    }
   });
 })();
