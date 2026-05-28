@@ -38,7 +38,7 @@ python3 -m http.server 8080
 
 ## Use
 
-- The amount field at the top is the **only input** (default `$7,000`).
+- The amount field at the top is the **only input** (starts empty; autofocused).
 - Shares are **year-specific** (from the workbook’s Tax rates / invoice totals),
   not a fixed 85/15 split.
 - Municipal amounts allocate across 31 services in proportion to each line’s

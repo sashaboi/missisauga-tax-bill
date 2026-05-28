@@ -10,7 +10,7 @@
 // section: "Mississauga" | "Peel" | "Other" | "Education"
 
 window.TAX_DATA = {
-  defaultTax: 7000,
+  defaultTax: 0,
   defaultYear: 2026,
   years: {
     2025: {

@@ -255,7 +255,12 @@
   }
 
   function syncTaxDisplayFormatted() {
-    input.value = formatTaxDisplay(taxValueFromInput());
+    const raw = String(input.value ?? "").replace(/\D/g, "");
+    if (!raw) {
+      input.value = "";
+      return;
+    }
+    input.value = formatTaxDisplay(parseTaxInput(input.value));
   }
 
   // Notes block (details view only).
@@ -304,8 +309,9 @@
 
   onYearChange(getStoredYear());
 
-  const startTax = parseTaxInput(input.value) || D.defaultTax || 0;
-  input.value = formatTaxDisplay(startTax);
+  const digits = String(input.value ?? "").replace(/\D/g, "");
+  const startTax = digits === "" ? 0 : parseTaxInput(input.value);
+  if (digits) input.value = formatTaxDisplay(startTax);
   recalc(startTax);
 
   if (window.tippy) initTooltips();
